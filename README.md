@@ -1,2 +1,2 @@
 # devops
-all things devops
+This is for my fun -filled project
