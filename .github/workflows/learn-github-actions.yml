@@ -32,7 +32,9 @@ jobs:
       #     source venv/bin/activate
       #     pip install flake8
       #     flake8 .
-
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
       - name: Run tests
         run: |
           source venv/bin/activate
