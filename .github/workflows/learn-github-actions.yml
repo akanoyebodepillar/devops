@@ -3,7 +3,7 @@ name: Build and Test Flask Application
 on:
   push:
     branches:
-      - *
+      - '*'
   pull_request:
     branches:
       - main
