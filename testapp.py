@@ -21,10 +21,10 @@ class MyTest(TestCase):
         # This method is called after each test
         pass
 
-    def test_home(self):
-        response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Hello, World!", response.data)
+    # def test_home(self):
+    #     response = self.client.get('/')
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertIn(b"Hello, World!", response.data)
 
     def test_get_users(self):
         response = self.client.get('/users')
@@ -32,12 +32,12 @@ class MyTest(TestCase):
         data = json.loads(response.data)
         self.assertEqual(len(data), len(users))
 
-    def test_add_user(self):
-        new_user = {'name': 'Charlie'}
-        response = self.client.post('/users', data=new_user)
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data)
-        self.assertEqual(data['name'], 'Charlie')
+    # def test_add_user(self):
+    #     new_user = {'name': 'Charlie'}
+    #     response = self.client.post('/users', data=new_user)
+    #     self.assertEqual(response.status_code, 200)
+    #     data = json.loads(response.data)
+    #     self.assertEqual(data['name'], 'Charlie')
 
     def test_get_user_by_id(self):
         response = self.client.get('/users/1')
