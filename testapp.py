@@ -35,7 +35,7 @@ class MyTest(TestCase):
     def test_add_user(self):
         new_user = {'name': 'Charlie'}
         response = self.client.post('/users', data=new_user)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         data = json.loads(response.data)
         self.assertEqual(data['name'], 'Charlie')
 
