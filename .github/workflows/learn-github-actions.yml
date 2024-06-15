@@ -27,17 +27,26 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
 
-      # - name: Lint with flake8
-      #   run: |
-      #     source venv/bin/activate
-      #     pip install flake8
-      #     flake8 .
   unit-test:
+    needs: build  # Ensure 'unit-test' job depends on successful completion of 'build' job
     runs-on: ubuntu-latest
+
     steps:
-      - name: Run tests
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
           python -m unittest discover -s . -p 'testapp.py'
+
