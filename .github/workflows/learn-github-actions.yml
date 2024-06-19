@@ -26,9 +26,9 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
+          pip install pytest  # Install pytest
 
       - name: Run tests with pytest
         run: |
           source venv/bin/activate
           pytest
-
