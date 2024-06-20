@@ -26,7 +26,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
-          pip install pytest  # Install pytest
+          pip install pytest
 
       - name: Run tests with pytest and generate JUnit XML report
         run: |
@@ -38,3 +38,12 @@ jobs:
         with:
           name: test-results
           path: report.xml
+
+      - name: Add test results to GitHub Actions summary
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('report.xml', 'utf8');
+            github.summary.addRaw(report);
+            github.summary.write();
