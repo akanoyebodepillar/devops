@@ -39,11 +39,12 @@ jobs:
           name: test-results
           path: report.xml
 
-      - name: Add test results to GitHub Actions summary
-        uses: actions/github-script@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          script: |
-            const fs = require('fs');
-            const report = fs.readFileSync('report.xml', 'utf8');
-            github.summary.addRaw(report);
-            github.summary.write();
+          node-version: '14'
+
+      - name: Add test results to GitHub Actions summary
+        run: |
+          npm install @actions/core
+          node -e "const fs = require('fs'); const core = require('@actions/core'); const report = fs.readFileSync('report.xml', 'utf8'); core.summary.addRaw(report).write();"
