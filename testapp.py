@@ -1,54 +1,26 @@
-import unittest
-from flask import Flask
-from flask_testing import TestCase
+import pytest
 import json
+from app import app, users  # Assuming app and users are imported correctly
 
-# Import your Flask app
-from app import app, users
+@pytest.fixture
+def client():
+    app.config['TESTING'] = True
+    with app.test_client() as client:
+        yield client
 
-class MyTest(TestCase):
+def test_get_users(client):
+    response = client.get('/users')
+    assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
+    data = json.loads(response.data)
+    assert len(data) == len(users), f"Expected {len(users)} users but got {len(data)}"
 
-    def create_app(self):
-        # Configure your app for testing
-        app.config['TESTING'] = True
-        return app
+def test_get_user_by_id(client):
+    response = client.get('/users/1')
+    assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
+    data = json.loads(response.data)
+    assert data['name'] == 'Alice', f"Expected user name 'Alice' but got {data['name']}"
 
-    def setUp(self):
-        # This method is called before each test
-        self.client = self.app.test_client()
-
-    def tearDown(self):
-        # This method is called after each test
-        pass
-
-    # def test_home(self):
-    #     response = self.client.get('/')
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertIn(b"Hello, World!", response.data)
-
-    def test_get_users(self):
-        response = self.client.get('/users')
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data)
-        self.assertEqual(len(data), len(users))
-
-    # def test_add_user(self):
-    #     new_user = {'name': 'Charlie'}
-    #     response = self.client.post('/users', data=new_user)
-    #     self.assertEqual(response.status_code, 200)
-    #     data = json.loads(response.data)
-    #     self.assertEqual(data['name'], 'Charlie')
-
-    def test_get_user_by_id(self):
-        response = self.client.get('/users/1')
-        self.assertEqual(response.status_code, 200)
-        data = json.loads(response.data)
-        self.assertEqual(data['name'], 'Alice')
-
-        response = self.client.get('/users/999')
-        self.assertEqual(response.status_code, 404)
-        data = json.loads(response.data)
-        self.assertEqual(data['error'], 'User not found')
-
-if __name__ == '__main__':
-    unittest.main()
+    response = client.get('/users/999')
+    assert response.status_code == 404, f"Expected status code 404 but got {response.status_code}"
+    data = json.loads(response.data)
+    assert data['error'] == 'User not found', f"Expected error message 'User not found' but got {data['error']}"
