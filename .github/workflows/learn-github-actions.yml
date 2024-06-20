@@ -28,7 +28,13 @@ jobs:
           pip install -r requirements.txt
           pip install pytest  # Install pytest
 
-      - name: Run tests with pytest
+      - name: Run tests with pytest and generate JUnit XML report
         run: |
           source venv/bin/activate
-          pytest testapp.py
+          pytest testapp.py --junitxml=report.xml
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: report.xml
