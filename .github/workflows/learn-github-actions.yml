@@ -63,7 +63,7 @@ jobs:
       - name: Build, tag, and push Docker image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          ECR_REPOSITORY: my-flask-app # Change this to your repository name
+          ECR_REPOSITORY: 339712760713.dkr.ecr.us-west-2.amazonaws.com/userapi # Change this to your repository name
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
