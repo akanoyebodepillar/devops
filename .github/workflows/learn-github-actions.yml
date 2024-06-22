@@ -1,4 +1,4 @@
-name: Build and Test Flask Application
+name: Build, Test, and Publish Flask Application
 
 on:
   push:
@@ -48,3 +48,23 @@ jobs:
         run: |
           npm install @actions/core
           node -e "const fs = require('fs'); const core = require('@actions/core'); const report = fs.readFileSync('report.xml', 'utf8'); core.summary.addRaw(report).write();"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2 # Change this to your region
+
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push Docker image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          ECR_REPOSITORY: my-flask-app # Change this to your repository name
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
