@@ -1,195 +1,99 @@
-from flask import Flask, jsonify, request, render_template_string
+from flask import Flask, request, jsonify, make_response
+from flask_sqlalchemy import SQLAlchemy
+from os import environ
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('DB_URL')
+db = SQLAlchemy(app)
 
-# Initial list of users
-users = [
-    {"id": 1, "name": "Alice"},
-    {"id": 2, "name": "Bob"}
-]
+class User(db.Model):
+    __tablename__ = 'users'
 
-# Route for the home page
-@app.route('/')
-def home():
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>User Management</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #f4f4f4;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                flex-direction: column;
-            }
-            .container {
-                background: white;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                width: 300px;
-                margin-bottom: 20px;
-            }
-            h1, h2 {
-                font-size: 24px;
-                margin-bottom: 20px;
-                text-align: center;
-            }
-            label {
-                display: block;
-                margin-bottom: 5px;
-            }
-            input[type="text"], input[type="number"], input[type="submit"] {
-                width: 100%;
-                padding: 10px;
-                margin: 5px 0 20px;
-                border: 1px solid #ccc;
-                border-radius: 3px;
-            }
-            input[type="submit"] {
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                cursor: pointer;
-            }
-            input[type="submit"]:hover {
-                background-color: #45a049;
-            }
-            ul {
-                list-style-type: none;
-                padding: 0;
-            }
-            li {
-                background: #e0e0e0;
-                margin: 5px 0;
-                padding: 10px;
-                border-radius: 3px;
-                text-align: center;
-            }
-            .error {
-                color: red;
-                text-align: center;
-                margin-bottom: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Add a New User</h1>
-            <form action="/users" method="post">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
-                <input type="submit" value="Add User">
-            </form>
-        </div>
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    phone    = db.Column(db.String(10), unique=True, nullable=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
 
-        <div class="container">
-            <h2>Get User by ID</h2>
-            <form action="/get_user" method="post">
-                <label for="user_id">User ID:</label>
-                <input type="number" id="user_id" name="user_id" required>
-                <input type="submit" value="Get User">
-            </form>
-            {% if user %}
-                <h2>Found User</h2>
-                <ul>
-                    <li>{{ user['name'] }}</li>
-                </ul>
-            {% elif error %}
-                <div class="error">{{ error }}</div>
-            {% endif %}
-        </div>
+    def json(self):
+        return {'id': self.id, 'username': self.username, 'email': self.email, 'phone': self.phone}
 
-        <div class="container">
-            <h2>Current Users</h2>
-            <ul>
-                {% for user in users %}
-                    <li>{{ user['name'] }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    </body>
-    </html>
-    """
-    return render_template_string(html_content, users=users)
+db.create_all()
 
-# Route to handle both getting all users and adding a new user
-@app.route('/users', methods=['GET', 'POST'])
-def manage_users():
-    if request.method == 'GET':
-        # Return the list of users
-        return jsonify(users)
-    
-    if request.method == 'POST':
-        # Get the new user data from the form
-        new_user = {"name": request.form['name']}
-        # Assign a new ID to the new user
-        if users:
-            new_user["id"] = users[-1]["id"] + 1
-        else:
-            new_user["id"] = 1
-        # Add the new user to the list
-        users.append(new_user)
-        # Redirect back to home
-        return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta http-equiv="refresh" content="0; url=/" />
-        </head>
-        <body>
-            Redirecting...
-        </body>
-        </html>
-        """)
+#create a test route
+@app.route('/test', methods=['GET'])
+def test():
+    return make_response(jsonify({'message': 'test route'}), 200)
 
-# Route to get a specific user by ID and display in HTML
-@app.route('/get_user', methods=['POST'])
-def get_user_by_id():
-    user_id = int(request.form['user_id'])
-    user = next((user for user in users if user['id'] == user_id), None)
-    if user:
-        return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta http-equiv="refresh" content="0; url=/" />
-        </head>
-        <body>
-            Redirecting...
-        </body>
-        </html>
-        """, user=user, users=users)
-    else:
-        return render_template_string("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta http-equiv="refresh" content="0; url=/" />
-        </head>
-        <body>
-            Redirecting...
-        </body>
-        </html>
-        """, error="User not found", users=users)
 
-# Route to get a specific user by ID and return JSON
-@app.route('/users/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    user = next((user for user in users if user['id'] == user_id), None)
-    if user:
-        return jsonify(user), 200
-    else:
-        return jsonify({"error": "User not found"}), 404
+# create a user
+@app.route('/users', methods=['POST'])
+def create_user():
+    try:
+        data = request.get_json()
+        if not data:
+            return make_response(jsonify({'message': 'No input data provided'}), 400)
+        if 'username' not in data or 'email' not in data or 'phone' not in data:
+            return make_response(jsonify({'message': 'Missing username,email or phone'}), 400)
+        
+        new_user = User(username=data['username'], email=data['email'], phone=data['phone'])
+        db.session.add(new_user)
+        db.session.commit()
+        return make_response(jsonify({'message': 'user created'}), 201)
+    except Exception as e:
+        return make_response(jsonify({'message': 'error creating user', 'error': str(e)}), 500)
 
-# Start the Flask application
+# get all users
+@app.route('/users', methods=['GET'])
+def get_users():
+    try:
+        users = User.query.all()
+        return make_response(jsonify([user.json() for user in users]), 200)
+    except Exception as e:
+        return make_response(jsonify({'message': 'error getting users', 'error': str(e)}), 500)
+
+# get a user by id
+@app.route('/users/<int:id>', methods=['GET'])
+def get_user(id):
+    try:
+        user = User.query.filter_by(id=id).first()
+        if user:
+            return make_response(jsonify({'user': user.json()}), 200)
+        return make_response(jsonify({'message': 'user not found'}), 404)
+    except Exception as e:
+        return make_response(jsonify({'message': 'error getting user', 'error': str(e)}), 500)
+
+# update a user
+@app.route('/users/<int:id>', methods=['PUT'])
+def update_user(id):
+    try:
+        user = User.query.filter_by(id=id).first()
+        if user:
+            data = request.get_json()
+            if not data:
+                return make_response(jsonify({'message': 'No input data provided'}), 400)
+            if 'username' not in data or 'email' not in data or 'phone' not in data:
+                return make_response(jsonify({'message': 'Missing username,email or phone'}), 400)
+            user.username = data['username']
+            user.email = data['email']
+            user.phone = data['phone']
+            db.session.commit()
+            return make_response(jsonify({'message': 'user updated'}), 200)
+        return make_response(jsonify({'message': 'user not found'}), 404)
+    except Exception as e:
+        return make_response(jsonify({'message': 'error updating user', 'error': str(e)}), 500)
+
+# delete a user
+@app.route('/users/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    try:
+        user = User.query.filter_by(id=id).first()
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return make_response(jsonify({'message': 'user deleted'}), 200)
+        return make_response(jsonify({'message': 'user not found'}), 404)
+    except Exception as e:
+        return make_response(jsonify({'message': 'error deleting user', 'error': str(e)}), 500)
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
