@@ -5,7 +5,7 @@ metadata:
   labels:
     app: users
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: users
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: userapi
-        image: 339712760713.dkr.ecr.us-west-2.amazonaws.com/userapi:latest
+        image: 339712760713.dkr.ecr.us-west-2.amazonaws.com/userapi:1c4ebe265932c4ce900a158760eeb97836831afd
         imagePullPolicy: Always
         ports:
           - containerPort: 5000
