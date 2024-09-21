@@ -9,7 +9,7 @@ services:
       - FLASK_APP=app.py
       - FLASK_RUN_HOST=0.0.0.0
       - FLASK_RUN_PORT=5000
-      - DB_URL=postgresql://akanoyebodepillar:Zanku419@terraform-20240816205341622500000001.c3y2w8628nmv.us-west-2.rds.amazonaws.com:5432/mydatabase
+      - DB_URL=postgresql://postgres:postgres@flask_db:5432/postgres
     volumes:
       - .:/app
     depends_on:
@@ -25,7 +25,6 @@ services:
       - POSTGRES_DB=postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
-   
 
 volumes:
   pgdata: {}
